@@ -3,7 +3,8 @@ from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
 from typing import Any
 from torch import tensor, Tensor, float32, long, no_grad
-from numpy import ndarray
+from numpy import ndarray, float64, float32 as np_float_32
+from numpy.typing import NDArray
 
 
 class Filter_Model:
@@ -96,15 +97,15 @@ class Filter_Model:
             loss_data.backward()
             self.optimizer.step()
 
-    def score(self, embeddings: Any) -> ndarray:
+    def score(self, embeddings: NDArray[float64]) -> NDArray[np_float_32]:
         """
         Scoring the given embeddings with the filter model.
 
         Args:
-            embeddings (Any): The input embeddings to score.
+            embeddings (NDArray[float64]): The embeddings to score.
 
         Returns:
-            ndarray: The scores of the embeddings.
+            NDArray[np_float_32]: The scores of the given embeddings.
         """
         horizontal_tensor: Tensor = tensor(
             data=embeddings,
@@ -112,5 +113,5 @@ class Filter_Model:
         )
         self.model.eval()
         with no_grad():
-            scores: ndarray = self.model(horizontal_tensor)[:,1].numpy()
+            scores: NDArray[np_float_32] = self.model(horizontal_tensor)[:,1].numpy()
         return scores
