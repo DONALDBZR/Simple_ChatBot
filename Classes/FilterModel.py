@@ -1,0 +1,116 @@
+from Classes.ResponseFilterNeuralNetwork import Response_Filter_Neural_Network
+from torch.optim import Adam
+from torch.nn import CrossEntropyLoss
+from typing import Any
+from torch import tensor, Tensor, float32, long, no_grad
+from numpy import ndarray
+
+
+class FilterModel:
+    """
+    It uses a neural network to filter input data based on their embeddings.
+
+    Attributes:
+        model (Response_Filter_Neural_Network): The neural network used for filtering.
+        optimizer (Adam): The optimizer used for training the model.
+        loss_function (CrossEntropyLoss): The loss function used for training the model.
+
+    Methods:
+        train_filter(self, embeddings: Any, labels: Any, epochs: int = 10) -> None: Training the filter model for a given number of epochs.
+        score(self, embeddings: Any) -> ndarray: Scoring the given embeddings with the filter model.
+    """
+    __model: Response_Filter_Neural_Network
+    __optimizer: Adam
+    __loss_function: CrossEntropyLoss
+
+    def __init__(
+        self,
+        input_size: int = 100,
+        learning_rate: float = 1e-3
+    ):
+        """
+        Initializing the `FilterModel` with a given input size and learning rate.
+
+        Args:
+            input_size (int, optional): The size of the input. Defaults to 100.
+            learning_rate (float, optional): The learning rate for the optimizer. Defaults to 1e-3.
+        """
+        self.model = Response_Filter_Neural_Network(input_size)
+        self.optimizer = Adam(
+            params=self.model.parameters(),
+            lr=learning_rate
+        )
+        self.loss_function = CrossEntropyLoss()
+
+    @property
+    def model(self) -> Response_Filter_Neural_Network:
+        return self.__model
+
+    @model.setter
+    def model(self, model: Response_Filter_Neural_Network) -> None:
+        self.__model = model
+
+    @property
+    def optimizer(self) -> Adam:
+        return self.__optimizer
+
+    @optimizer.setter
+    def optimizer(self, optimizer: Adam) -> None:
+        self.__optimizer = optimizer
+
+    @property
+    def loss_function(self) -> CrossEntropyLoss:
+        return self.__loss_function
+
+    @loss_function.setter
+    def loss_function(self, loss_function: CrossEntropyLoss) -> None:
+        self.__loss_function = loss_function
+
+    def train_filter(
+        self,
+        embeddings: Any,
+        labels: Any,
+        epochs: int = 10
+    ) -> None:
+        """
+        Training the filter model for a given number of epochs.
+
+        Args:
+            embeddings (Any): The input embeddings to train on.
+            labels (Any): The labels to train on.
+            epochs (int, optional): The number of epochs to train for. Defaults to 10.
+        """
+        horizontal_tensor: Tensor = tensor(
+            data=embeddings,
+            dtype=float32
+        )
+        vertical_tensor: Tensor = tensor(
+            data=labels,
+            dtype=long
+        )
+        self.model.train()
+        for epoch in range(epochs):
+            self.optimizer.zero_grad()
+            output: Any = self.model(horizontal_tensor)
+            loss_data: Any = self.loss_function(output, vertical_tensor)
+            loss_data.backward()
+            self.optimizer.step()
+
+    def score(self, embeddings: Any) -> ndarray:
+        """
+        Scoring the given embeddings with the filter model.
+
+        Args:
+            embeddings (Any): The input embeddings to score.
+
+        Returns:
+            ndarray: The scores of the embeddings.
+        """
+        horizontal_tensor: Tensor = tensor(
+            data=embeddings,
+            dtype=float32
+        )
+        self.model.eval()
+        with no_grad():
+            scores: ndarray = self.model(horizontal_tensor)[:,1].numpy()
+        return scores
