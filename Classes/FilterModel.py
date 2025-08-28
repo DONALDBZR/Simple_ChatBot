@@ -6,7 +6,7 @@ from torch import tensor, Tensor, float32, long, no_grad
 from numpy import ndarray
 
 
-class FilterModel:
+class Filter_Model:
     """
     It uses a neural network to filter input data based on their embeddings.
 
