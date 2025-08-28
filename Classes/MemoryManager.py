@@ -15,7 +15,7 @@ class Memory_Manager:
 
     Methods:
         store(user_input: str, bot_response: str) -> None: Storing the user input and bot response in the memory.
-        retrieve_memory(query: str, embed_function: Callable[[List[str]], ndarray], key: int = 3) -> str: Retrieving a given number of most similar questions from memory given a query.
+        retrieveMemory(query: str, embed_function: Callable[[List[str]], NDArray[float64]], key: int = 3) -> str: Retrieving a given number of most similar questions from memory given a query.
     """
     __history: List[Tuple[str, str]]
     __questions: List[str]
