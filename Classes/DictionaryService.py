@@ -3,7 +3,7 @@ from pydictionary import Dictionary
 from typing import List, Any, Optional
 
 
-class DictionaryService:
+class Dictionary_Service:
     """
     It is the service that will act as dictionary.
 
