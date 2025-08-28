@@ -135,6 +135,6 @@ class Logger_Configurator:
         formatter: Formatter = Formatter(self.format)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-        for handler in self.getHandlers():
+        for handler in self.handlers:
             logger.addHandler(handler)
         return logger
