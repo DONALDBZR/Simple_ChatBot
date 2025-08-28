@@ -33,7 +33,7 @@ class Text_Embedder:
 
     def embed(
         self,
-        texts: ndarray,
+        texts: ndarray[Any, Any],
         dimensionality: int = 100
     ) -> ndarray:
         """
