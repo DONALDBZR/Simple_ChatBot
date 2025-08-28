@@ -5,7 +5,7 @@ from numpy import ndarray, zeros, hstack
 from typing import Union, Tuple, Any
 
 
-class TextEmbedder:
+class Text_Embedder:
     """
     It embeds text data unto numerical vectors by using a Term Frequency-Inverse Document Frequency and Singular Value Decomposition.
 
