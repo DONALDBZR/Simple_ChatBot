@@ -3,7 +3,7 @@ from Classes.MemoryManager import Memory_Manager
 from Classes.TextEmbedder import Text_Embedder
 from Classes.FilterModel import Filter_Model
 from Classes.DictionaryService import Dictionary_Service
-from transformers import AutoModelForCausalLM, AutoTokenizer, BatchEncoding, GenerateOutput, PreTrainedTokenizer, PreTrainedTokenizerFast
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Union, Optional
 from transformers.models.auto.modeling_auto import _BaseModelWithGenerate
 from threading import Thread
@@ -43,7 +43,7 @@ class Trainer:
     __dictionary: Dictionary_Service
     __is_smart_active: bool
     __passive_replies: List[str]
-    __tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
+    __tokenizer: AutoTokenizer
     __model: _BaseModelWithGenerate
 
     def __init__(self):
@@ -112,11 +112,11 @@ class Trainer:
         self.__passive_replies = value
 
     @property
-    def tokenizer(self) -> Union[PreTrainedTokenizer, PreTrainedTokenizerFast]:
+    def tokenizer(self) -> AutoTokenizer:
         return self.__tokenizer
 
     @tokenizer.setter
-    def tokenizer(self, value: Union[PreTrainedTokenizer, PreTrainedTokenizerFast]) -> None:
+    def tokenizer(self, value: AutoTokenizer) -> None:
         self.__tokenizer = value
 
     @property
@@ -208,7 +208,7 @@ class Trainer:
         memory_context: str = self.retrieveMemory(text)
         history: str = " ".join(f"User:{user_input} Bot:{bot_response}" for user_input, bot_response in self.memory.history[-3:])
         prompt: str = f"{memory_context} {history} User:{text} Bot:"
-        inputs: BatchEncoding = self.tokenizer.encode_plus(
+        inputs: BatchEncoding = self.tokenizer.encode_plus( # type: ignore
             text=prompt,
             return_tensors="pt",
             truncation=True,
@@ -217,7 +217,7 @@ class Trainer:
         input_ids: Optional[Tensor] = inputs.get("input_ids")
         if input_ids is None:
             raise ValueError("Input IDs are missing from the inputs dictionary")
-        generated_output: Union[GenerateOutput, LongTensor] = self.model.generate(
+        generated_output: LongTensor = self.model.generate(
             inputs=input_ids,
             attention_mask=inputs["attention_mask"],
             max_new_tokens=100,
@@ -225,9 +225,9 @@ class Trainer:
             do_sample=True,
             top_p=0.9,
             temperature=0.8
-        )
+        ) # type: ignore
         tokens: Tensor = generated_output[:, input_ids.shape[-1]:][0]
-        reply: str = self.tokenizer.decode(
+        reply: str = self.tokenizer.decode( # type: ignore
             token_ids=tokens,
             skip_special_tokens=True
         ).strip()
