@@ -1,9 +1,9 @@
 from Classes.ResponseFilterNeuralNetwork import Response_Filter_Neural_Network
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
-from typing import Any
+from typing import List
 from torch import tensor, Tensor, float32, long, no_grad
-from numpy import ndarray, float64, float32 as np_float_32
+from numpy import float64, float32 as np_float_32
 from numpy.typing import NDArray
 
 
@@ -67,19 +67,19 @@ class Filter_Model:
     def loss_function(self, loss_function: CrossEntropyLoss) -> None:
         self.__loss_function = loss_function
 
-    def train_filter(
+    def trainFilter(
         self,
-        embeddings: Any,
-        labels: Any,
+        embeddings: NDArray[float64],
+        labels: List[int],
         epochs: int = 10
     ) -> None:
         """
-        Training the filter model for a given number of epochs.
+        Training the filter model with the given embeddings and labels.
 
         Args:
-            embeddings (Any): The input embeddings to train on.
-            labels (Any): The labels to train on.
-            epochs (int, optional): The number of epochs to train for. Defaults to 10.
+            embeddings (NDArray[float64]): The embeddings to train the filter model with.
+            labels (List[int]): The labels of the embeddings.
+            epochs (int, optional): The number of epochs to train the filter model. Defaults to 10.
         """
         horizontal_tensor: Tensor = tensor(
             data=embeddings,
@@ -92,8 +92,8 @@ class Filter_Model:
         self.model.train()
         for epoch in range(epochs):
             self.optimizer.zero_grad()
-            output: Any = self.model(horizontal_tensor)
-            loss_data: Any = self.loss_function(output, vertical_tensor)
+            output: Tensor = self.model(horizontal_tensor)
+            loss_data: Tensor = self.loss_function(output, vertical_tensor)
             loss_data.backward()
             self.optimizer.step()
 
