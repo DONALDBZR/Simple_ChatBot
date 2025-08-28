@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-from numpy import ndarray, zeros, hstack, float64
-from typing import Union, Tuple, Any, List
+from numpy import zeros, hstack, float64
+from typing import List
 from scipy.sparse import spmatrix
 from numpy.typing import NDArray
 
