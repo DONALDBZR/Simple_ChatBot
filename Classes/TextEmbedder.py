@@ -35,7 +35,7 @@ class Text_Embedder:
         self,
         texts: ndarray[Any, Any],
         dimensionality: int = 100
-    ) -> ndarray:
+    ) -> ndarray[Any, Any]:
         """
         Embedding the given texts using the vectorizer and `TruncatedSVD` to the given dimensionality.
 
