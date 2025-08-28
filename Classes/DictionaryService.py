@@ -1,6 +1,7 @@
 from nltk.corpus import wordnet
 from pydictionary import Dictionary
-from typing import List, Any, Optional
+from typing import List, Optional, Dict
+from nltk.corpus.reader.wordnet import Synset
 
 
 class Dictionary_Service:
@@ -11,7 +12,7 @@ class Dictionary_Service:
         dictionary: (Dictionary): The dictionary that will be used to find the definition of the given word.
 
     Methods:
-        define_word(word: str) -> str: Retrieving the definition of the given word.
+        defineWord(word: str) -> str: Retrieving the definition of the given word.
     """
     __dictionary: Dictionary
 
@@ -26,26 +27,21 @@ class Dictionary_Service:
     def dictionary(self, dictionary: Dictionary) -> None:
         self.__dictionary = dictionary
 
-    def define_word(self, word: str) -> str:
+    def defineWord(self, word: str) -> str:
         """
         Retrieving the definition of the given word.
 
-        This method does the following:
-            1. Checks if the word is found in PyDictionary.
-            2. If not, it searches for synsets in WordNet.
-            3. Returns the definition of the word or "No definition found." if it was not found.
-
         Args:
-            word (str): The word to find the definition for.
+            word (str): The word for which the definition will be retrieved.
 
         Returns:
-            str: The definition of the word or "No definition found." if it was not found.
+            str: The definition of the given word, or "No definition found." if no definition was found.
         """
         self.dictionary = Dictionary(word)
-        definitions: Optional[List[Any]] = self.dictionary.meanings()
+        definitions: Optional[Dict[str, List[str]]] = self.dictionary.meanings() # type: ignore
         if definitions:
-            return '; '.join(f"{key}: {', '.join(value)}" for key, value in definitions.items()) # type: ignore
-        synsets: List[Any] = wordnet.synsets(word)
+            return "; ".join(f"{key}: {', '.join(value)}" for key, value in definitions.items())
+        synsets: List[Synset] = wordnet.synsets(word) # type: ignore
         if synsets:
-            return '; '.join(set(synset.definition() for synset in synsets))
+            return "; ".join(set(synset.definition() for synset in synsets)) # type: ignore
         return "No definition found."
