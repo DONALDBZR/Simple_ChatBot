@@ -1,8 +1,9 @@
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-from numpy import ndarray, zeros, hstack
-from typing import Union, Tuple, Any
+from numpy import ndarray, zeros, hstack, float64
+from typing import Union, Tuple, Any, List
+from scipy.sparse import spmatrix
+from numpy.typing import NDArray
 
 
 class Text_Embedder:
@@ -33,28 +34,28 @@ class Text_Embedder:
 
     def embed(
         self,
-        texts: ndarray[Any, Any],
+        texts: List[str],
         dimensionality: int = 100
-    ) -> ndarray[Any, Any]:
+    ) -> NDArray[float64]:
         """
         Embedding the given texts using the vectorizer and `TruncatedSVD` to the given dimensionality.
 
         Args:
-            texts (ndarray): The texts to be embedded.
-            dimensionality (int): The number of dimensions to reduce to. Defaults to 100.
+            texts (List[str]): The texts to be embedded.
+            dimensionality (int, optional): The dimensionality to be used for the embedding. Defaults to 100.
 
         Returns:
-            ndarray: The embedded vectors.
+            NDArray[float64]: The embedded vectors.
         """
-        vectors: Union[Tuple[Any], Any] = self.vectorizer.fit_transform(texts)
-        features = vectors.shape[1]
-        components = min(dimensionality, features)
+        vectors: spmatrix = self.vectorizer.fit_transform(texts)
+        features: int = vectors.shape[1]
+        components: int = min(dimensionality, features)
         singular_value_decomposition: TruncatedSVD = TruncatedSVD(
             n_components=components
         )
-        reduced: ndarray = singular_value_decomposition.fit_transform(vectors)
+        reduced: NDArray[float64] = singular_value_decomposition.fit_transform(vectors)
         if components >= dimensionality:
             return reduced
-        padding: ndarray = zeros((reduced.shape[0], dimensionality - components))
+        padding: NDArray[float64] = zeros((reduced.shape[0], dimensionality - components))
         reduced = hstack((reduced, padding))
         return reduced
