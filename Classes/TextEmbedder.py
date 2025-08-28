@@ -56,6 +56,9 @@ class Text_Embedder:
         reduced: NDArray[float64] = singular_value_decomposition.fit_transform(vectors)
         if components >= dimensionality:
             return reduced
-        padding: NDArray[float64] = zeros((reduced.shape[0], dimensionality - components))
+        padding: NDArray[float64] = zeros(
+            shape=(reduced.shape[0], dimensionality - components),
+            dtype=float64
+        )
         reduced = hstack((reduced, padding))
         return reduced
