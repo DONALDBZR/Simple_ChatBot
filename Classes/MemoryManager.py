@@ -1,6 +1,7 @@
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List, Tuple, Callable, Any
-from numpy import ndarray, argsort
+from numpy import ndarray, argsort, float64, intp
+from numpy.typing import NDArray
 
 
 class Memory_Manager:
@@ -64,27 +65,27 @@ class Memory_Manager:
         self.questions.append(user_input)
         self.answers.append(bot_response)
 
-    def retrieve_memory(
+    def retrieveMemory(
         self,
         query: str,
-        embed_function: Callable[[List[str]], ndarray],
+        embed_function: Callable[[List[str]], NDArray[float64]],
         key: int = 3
     ) -> str:
         """
         Retrieving a given number of most similar questions from memory given a query.
-        
+
         Args:
-            query (str): The query to find similar questions.
-            embed_function (Callable[[List[str]], ndarray]): The function to embed the questions.
-            key (int, optional): The number of questions to retrieve. Defaults to 3.
-        
+            query (str): The query to search the memory for.
+            embed_function (Callable[[List[str]], NDArray[float64]]): A function that takes a list of strings and returns an embedding matrix.
+            key (int, optional): The number of most similar questions to be retrieved. Defaults to 3.
+
         Returns:
-            str: The retrieved questions.
+            str: A string containing the most similar questions and their respective answers.
         """
         if not self.questions:
             return ""
         texts: List[str] = self.questions + [query]
-        embeds: ndarray = embed_function(texts)
-        similarity: Any = cosine_similarity([embeds[-1]], embeds[:-1])[0] # type: ignore
-        indices: ndarray = argsort(similarity)[::-1][:key]
+        embeds: NDArray[float64] = embed_function(texts)
+        similarity: NDArray[float64] = cosine_similarity(embeds[-1].reshape(1, -1), embeds[:-1])[0]
+        indices: NDArray[intp] = argsort(similarity)[::-1][:key]
         return " ".join(f"User: {self.questions[index]} - Bot: {self.answers[index]}" for index in indices)
