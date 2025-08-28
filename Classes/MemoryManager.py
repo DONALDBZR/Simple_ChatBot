@@ -1,6 +1,6 @@
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import List, Tuple, Callable, Any
-from numpy import ndarray, argsort, float64, intp
+from typing import List, Tuple, Callable
+from numpy import argsort, float64, intp
 from numpy.typing import NDArray
 
 
