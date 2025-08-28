@@ -1,8 +1,13 @@
-import warnings
 from Classes.Logger import ChatBot_Logger
-from typing import Any, TextIO, Union, Optional
+from Classes.AITrainer import Trainer
 from warnings import showwarning
+from typing import Optional, TextIO, Union
+from time import sleep
+from numpy.random import randint
+from threading import Thread
 
+
+logger: ChatBot_Logger = ChatBot_Logger(__name__)
 
 def warningToLogger(
     message: Union[Warning, str],
@@ -13,431 +18,76 @@ def warningToLogger(
     line: Optional[str] = None
 ) -> None:
     """
-    Logging the given warning message as a warning.
-
-    It is a wrapper over the :py:func:`warnings.showwarning` function.  It takes the same parameters, but instead of printing the warning message, it logs it as a warning using the logger.
+    A function to be passed to warnings.showwarning() to send warning messages to the logger.  This allows the AI to log warnings in a structured format, rather than printing them to the console.
 
     Args:
-        message (Union[Warning, str]): The warning message or a :py:class:`Warning` instance.
-        category (type[Warning]): The warning category.
-        filename (str): The file name where the warning was raised.
-        line_number (int): The line number where the warning was raised.
-        file (Optional[TextIO], optional): The file where the warning was raised. Defaults to None.
-        line (Optional[str], optional): The line where the warning was raised. Defaults to None.
+        message: The warning message.
+        category: The category of the warning.
+        filename: The name of the file where the warning occurred.
+        line_number: The line number of the warning.
+        file: The file object where the warning occurred. Defaults to None.
+        line: The line of source code where the warning occurred. Defaults to None.
     """
     log_message: str = f"{category.__name__}: {message} (File: {filename}, Line: {line_number})"
     logger.warning(log_message)
 
-
-logger: ChatBot_Logger = ChatBot_Logger(__name__)
 showwarning = warningToLogger
+artificial_intelligence: Trainer = Trainer()
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import tensorflow as tf
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import keras
-import sklearn
-import xgboost as xgb
-import scipy
-import nltk
-import spacy
-import transformers
-import cv2
-import lightgbm as lgb
-import catboost as cb
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import wordnet
-from PyDictionary import PyDictionary
-import threading
-import time
+def ai_input_loop() -> None:
+    """
+    A loop that takes user input and sends it to the AI for processing.  This allows users to interact with the AI in the console.
 
-nltk.download('punkt')
-nltk.download('wordnet')
+    The AI can be asked to train on new data by prefixing the input with "train:", and to recall a previous response by prefixing the input with "recall:".
 
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    nlp = None
+    The loop will continue indefinitely until the user enters "quit" or "exit".
 
-tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
-dictionary = PyDictionary()
+    Args:
+        None
 
-
-class ResponseFilterNN(nn.Module):
-    def __init__(self, input_size=100):
-        super().__init__()
-        self.fc1 = nn.Linear(input_size, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 2)
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
-
-class AITrainer:
-    def __init__(self):
-        self.history = []
-        self.memory_q = []
-        self.memory_a = []
-        self.vectorizer = TfidfVectorizer()
-        self.filter_model = ResponseFilterNN()
-        self.optimizer = optim.Adam(self.filter_model.parameters(), lr=1e-3)
-        self.loss_fn = nn.CrossEntropyLoss()
-        self.smart_active = True
-        self.passive_replies = ["Do you have a question?", "I'm still thinking about language...", "Define a word for me."]
-        threading.Thread(target=self.train_all_words, daemon=True).start()
-
-    def embed_text(self, texts):
-        vectors = self.vectorizer.fit_transform(texts)
-        n_features = vectors.shape[1]
-        n_comp = min(100, n_features)
-        svd = TruncatedSVD(n_components=n_comp)
-        reduced = svd.fit_transform(vectors)
-        if n_comp < 100:
-            pad = np.zeros((reduced.shape[0], 100 - n_comp))
-            reduced = np.hstack((reduced, pad))
-        return reduced
-
-    def store(self, user_input, bot_response):
-        self.history.append((user_input, bot_response))
-        self.memory_q.append(user_input)
-        self.memory_a.append(bot_response)
-
-    def train_filter(self):
-        if len(self.memory_q) < 4:
-            return
-        inputs = [q + " " + a for q, a in zip(self.memory_q, self.memory_a)]
-        labels = [1 if "?" not in a else 0 for a in self.memory_a]
-        embedded = self.embed_text(inputs)
-        X = torch.tensor(embedded, dtype=torch.float32)
-        y = torch.tensor(labels, dtype=torch.long)
-        self.filter_model.train()
-        for _ in range(10):
-            self.optimizer.zero_grad()
-            out = self.filter_model(X)
-            loss = self.loss_fn(out, y)
-            loss.backward()
-            self.optimizer.step()
-
-    def define_word(self, word):
-        defs = dictionary.meaning(word)
-        if defs:
-            return '; '.join(f"{k}: {', '.join(v)}" for k,v in defs.items())
-        syns = wordnet.synsets(word)
-        if syns:
-            return '; '.join(set(s.definition() for s in syns))
-        return "No definition found."
-
-    def retrieve_memory(self, query, k=3):
-        if not self.memory_q:
-            return ""
-        texts = self.memory_q + [query]
-        embed = self.embed_text(texts)
-        sim = cosine_similarity([embed[-1]], embed[:-1])[0]
-        idxs = np.argsort(sim)[::-1][:k]
-        return ' '.join(f"User:{self.memory_q[i]} Bot:{self.memory_a[i]}" for i in idxs)
-
-    def smart_reply(self, user_input):
-        if not user_input.strip():
-            return self.passive_replies[np.random.randint(len(self.passive_replies))]
-        text = user_input.strip()
-        low = text.lower()
-        if low.startswith("define "):
-            word = text.split("define ",1)[1]
-            resp = self.define_word(word)
-            self.store(text, resp)
-            return resp
-
-        mem_ctx = self.retrieve_memory(text)
-        hist = ' '.join(f"User:{u} Bot:{b}" for u,b in self.history[-3:])
-        prompt = f"{mem_ctx} {hist} User:{text} Bot:"
-        inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=1024)
-        gen = model.generate(
-            inputs['input_ids'],
-            attention_mask=inputs['attention_mask'],
-            max_new_tokens=100,
-            pad_token_id=tokenizer.eos_token_id,
-            do_sample=True,
-            top_p=0.9,
-            temperature=0.8
-        )
-        reply = tokenizer.decode(gen[:, inputs['input_ids'].shape[-1]:][0], skip_special_tokens=True).strip()
-        if not reply:
-            reply = "Could you elaborate?"
-        self.store(text, reply)
-        return reply
-
-    def get_best_response(self, query):
-        if not self.memory_q:
-            return "No memory yet."
-        texts = self.memory_q + [query]
-        embed = self.embed_text(texts)
-        X = torch.tensor(embed[:-1], dtype=torch.float32)
-        self.filter_model.eval()
-        with torch.no_grad():
-            scores = self.filter_model(X)[:,1].numpy()
-        best = np.argmax(scores)
-        return self.memory_a[best]
-
-    def reinforcement(self, q, r):
-        self.memory_q.append(q)
-        self.memory_a.append(r)
-        self.train_filter()
-
-    def train_all_words(self):
-        time.sleep(2)
-        print("[AI Boot] Starting language comprehension training...")
-        all_words = list(wordnet.words())[:5000]
-        for i, word in enumerate(all_words):
-            defs = self.define_word(word)
-            if isinstance(defs, str):
-                self.store(f"define {word}", defs)
-            elif isinstance(defs, list):
-                self.store(f"define {word}", "; ".join(defs))
-            if i % 250 == 0:
-                print(f"[AI Boot] Trained on {i} words...")
-        print("[AI Boot] Training complete.")
-
-def ai_input_loop():
+    Returns:
+        None
+    """
     while True:
-        u = input("You: ")
-        if u.lower() in ['quit','exit']:
+        user_input: str = input("You: ")
+        if user_input.lower() in ["quit", "exit"]:
             break
-        if u.startswith('train:'):
-            txt = u.split(':',1)[1].strip()
-            ai.reinforcement(txt, "Trained.")
+        if user_input.startswith("train:"):
+            text: str = user_input.split(":", 1)[1].strip()
+            artificial_intelligence.reinforcement(text, "Trained.")
             print("AI: Training data added.")
             continue
-        if u.startswith('recall:'):
-            q = u.split(':',1)[1].strip()
-            print("AI:", ai.get_best_response(q))
+        if user_input.startswith("recall:"):
+            question: str = user_input.split(":", 1)[1].strip()
+            print(f"AI: {artificial_intelligence.getBestResponse(question)}")
             continue
-        print("AI:", ai.smart_reply(u))
+        print(f"AI: {artificial_intelligence.smartReply(user_input)}")
 
-def ai_self_talker():
+def ai_self_talker() -> None:
+    """
+    A loop that periodically sends empty strings to the AI's smartReply method to keep it "alive" and generate responses.  This allows the AI to generate responses without any user interaction.
+
+    The loop will continue indefinitely until the program is stopped.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     while True:
-        time.sleep(np.random.randint(8, 20))
-        if ai.smart_active:
-            reply = ai.smart_reply("")
-            print("AI:", reply)
+        sleep(randint(8, 20))
+        if artificial_intelligence.is_smart_active:
+            reply: str = artificial_intelligence.smartReply("")
+            print(f"AI: {reply}")
 
-ai = AITrainer()
-threading.Thread(target=ai_input_loop, daemon=True).start()
-threading.Thread(target=ai_self_talker, daemon=True).start()
-
+Thread(
+    target=ai_input_loop,
+    daemon=True
+).start()
+Thread(
+    target=ai_self_talker,
+    daemon=True
+).start()
 while True:
-    time.sleep(1)import warnings
-warnings.filterwarnings('ignore', category=UserWarning, module='google.protobuf')
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import tensorflow as tf
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import keras
-import sklearn
-import xgboost as xgb
-import scipy
-import nltk
-import spacy
-import transformers
-import cv2
-import lightgbm as lgb
-import catboost as cb
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import wordnet
-from PyDictionary import PyDictionary
-import threading
-import time
-
-nltk.download('punkt')
-nltk.download('wordnet')
-
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    nlp = None
-
-tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
-dictionary = PyDictionary()
-
-class ResponseFilterNN(nn.Module):
-    def __init__(self, input_size=100):
-        super().__init__()
-        self.fc1 = nn.Linear(input_size, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 2)
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return self.fc3(x)
-
-class AITrainer:
-    def __init__(self):
-        self.history = []
-        self.memory_q = []
-        self.memory_a = []
-        self.vectorizer = TfidfVectorizer()
-        self.filter_model = ResponseFilterNN()
-        self.optimizer = optim.Adam(self.filter_model.parameters(), lr=1e-3)
-        self.loss_fn = nn.CrossEntropyLoss()
-        self.smart_active = True
-        self.passive_replies = ["Do you have a question?", "I'm still thinking about language...", "Define a word for me."]
-        threading.Thread(target=self.train_all_words, daemon=True).start()
-
-    def embed_text(self, texts):
-        vectors = self.vectorizer.fit_transform(texts)
-        n_features = vectors.shape[1]
-        n_comp = min(100, n_features)
-        svd = TruncatedSVD(n_components=n_comp)
-        reduced = svd.fit_transform(vectors)
-        if n_comp < 100:
-            pad = np.zeros((reduced.shape[0], 100 - n_comp))
-            reduced = np.hstack((reduced, pad))
-        return reduced
-
-    def store(self, user_input, bot_response):
-        self.history.append((user_input, bot_response))
-        self.memory_q.append(user_input)
-        self.memory_a.append(bot_response)
-
-    def train_filter(self):
-        if len(self.memory_q) < 4:
-            return
-        inputs = [q + " " + a for q, a in zip(self.memory_q, self.memory_a)]
-        labels = [1 if "?" not in a else 0 for a in self.memory_a]
-        embedded = self.embed_text(inputs)
-        X = torch.tensor(embedded, dtype=torch.float32)
-        y = torch.tensor(labels, dtype=torch.long)
-        self.filter_model.train()
-        for _ in range(10):
-            self.optimizer.zero_grad()
-            out = self.filter_model(X)
-            loss = self.loss_fn(out, y)
-            loss.backward()
-            self.optimizer.step()
-
-    def define_word(self, word):
-        defs = dictionary.meaning(word)
-        if defs:
-            return '; '.join(f"{k}: {', '.join(v)}" for k,v in defs.items())
-        syns = wordnet.synsets(word)
-        if syns:
-            return '; '.join(set(s.definition() for s in syns))
-        return "No definition found."
-
-    def retrieve_memory(self, query, k=3):
-        if not self.memory_q:
-            return ""
-        texts = self.memory_q + [query]
-        embed = self.embed_text(texts)
-        sim = cosine_similarity([embed[-1]], embed[:-1])[0]
-        idxs = np.argsort(sim)[::-1][:k]
-        return ' '.join(f"User:{self.memory_q[i]} Bot:{self.memory_a[i]}" for i in idxs)
-
-    def smart_reply(self, user_input):
-        if not user_input.strip():
-            return self.passive_replies[np.random.randint(len(self.passive_replies))]
-        text = user_input.strip()
-        low = text.lower()
-        if low.startswith("define "):
-            word = text.split("define ",1)[1]
-            resp = self.define_word(word)
-            self.store(text, resp)
-            return resp
-
-        mem_ctx = self.retrieve_memory(text)
-        hist = ' '.join(f"User:{u} Bot:{b}" for u,b in self.history[-3:])
-        prompt = f"{mem_ctx} {hist} User:{text} Bot:"
-        inputs = tokenizer(prompt, return_tensors='pt', truncation=True, max_length=1024)
-        gen = model.generate(
-            inputs['input_ids'],
-            attention_mask=inputs['attention_mask'],
-            max_new_tokens=100,
-            pad_token_id=tokenizer.eos_token_id,
-            do_sample=True,
-            top_p=0.9,
-            temperature=0.8
-        )
-        reply = tokenizer.decode(gen[:, inputs['input_ids'].shape[-1]:][0], skip_special_tokens=True).strip()
-        if not reply:
-            reply = "Could you elaborate?"
-        self.store(text, reply)
-        return reply
-
-    def get_best_response(self, query):
-        if not self.memory_q:
-            return "No memory yet."
-        texts = self.memory_q + [query]
-        embed = self.embed_text(texts)
-        X = torch.tensor(embed[:-1], dtype=torch.float32)
-        self.filter_model.eval()
-        with torch.no_grad():
-            scores = self.filter_model(X)[:,1].numpy()
-        best = np.argmax(scores)
-        return self.memory_a[best]
-
-    def reinforcement(self, q, r):
-        self.memory_q.append(q)
-        self.memory_a.append(r)
-        self.train_filter()
-
-    def train_all_words(self):
-        time.sleep(2)
-        print("[AI Boot] Starting language comprehension training...")
-        all_words = list(wordnet.words())[:5000]
-        for i, word in enumerate(all_words):
-            defs = self.define_word(word)
-            if isinstance(defs, str):
-                self.store(f"define {word}", defs)
-            elif isinstance(defs, list):
-                self.store(f"define {word}", "; ".join(defs))
-            if i % 250 == 0:
-                print(f"[AI Boot] Trained on {i} words...")
-        print("[AI Boot] Training complete.")
-
-def ai_input_loop():
-    while True:
-        u = input("You: ")
-        if u.lower() in ['quit','exit']:
-            break
-        if u.startswith('train:'):
-            txt = u.split(':',1)[1].strip()
-            ai.reinforcement(txt, "Trained.")
-            print("AI: Training data added.")
-            continue
-        if u.startswith('recall:'):
-            q = u.split(':',1)[1].strip()
-            print("AI:", ai.get_best_response(q))
-            continue
-        print("AI:", ai.smart_reply(u))
-
-def ai_self_talker():
-    while True:
-        time.sleep(np.random.randint(8, 20))
-        if ai.smart_active:
-            reply = ai.smart_reply("")
-            print("AI:", reply)
-
-ai = AITrainer()
-threading.Thread(target=ai_input_loop, daemon=True).start()
-threading.Thread(target=ai_self_talker, daemon=True).start()
-
-while True:
-    time.sleep(1)
+    sleep(1)
