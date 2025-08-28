@@ -85,6 +85,6 @@ class Memory_Manager:
             return ""
         texts: List[str] = self.questions + [query]
         embeds: ndarray = embed_function(texts)
-        similarity: Any = cosine_similarity([embeds[-1]], embeds[:-1])[0]
+        similarity: Any = cosine_similarity([embeds[-1]], embeds[:-1])[0] # type: ignore
         indices: ndarray = argsort(similarity)[::-1][:key]
         return " ".join(f"User: {self.questions[index]} - Bot: {self.answers[index]}" for index in indices)
