@@ -4,8 +4,7 @@ from Classes.TextEmbedder import Text_Embedder
 from Classes.FilterModel import Filter_Model
 from Classes.DictionaryService import Dictionary_Service
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import List, Union, Optional
-from transformers.models.auto.modeling_auto import _BaseModelWithGenerate
+from typing import List, Optional
 from threading import Thread
 from time import sleep
 from numpy.typing import NDArray
@@ -44,7 +43,7 @@ class Trainer:
     __is_smart_active: bool
     __passive_replies: List[str]
     __tokenizer: AutoTokenizer
-    __model: _BaseModelWithGenerate
+    __model: AutoModelForCausalLM
 
     def __init__(self):
         """
@@ -57,7 +56,7 @@ class Trainer:
         self.is_smart_active = True
         self.passive_replies = ["Do you have a question?", "I'm still thinking about language...", "Define a word for me."]
         self.tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-        self.model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
+        self.model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium") # type: ignore
         Thread(
             target=self.trainAllWords,
             daemon=True
@@ -120,11 +119,11 @@ class Trainer:
         self.__tokenizer = value
 
     @property
-    def model(self) -> _BaseModelWithGenerate:
+    def model(self) -> AutoModelForCausalLM:
         return self.__model
 
     @model.setter
-    def model(self, value: _BaseModelWithGenerate) -> None:
+    def model(self, value: AutoModelForCausalLM) -> None:
         self.__model = value
 
     def embedText(self, texts: List[str]) -> NDArray[float64]:
@@ -217,11 +216,11 @@ class Trainer:
         input_ids: Optional[Tensor] = inputs.get("input_ids")
         if input_ids is None:
             raise ValueError("Input IDs are missing from the inputs dictionary")
-        generated_output: LongTensor = self.model.generate(
+        generated_output: LongTensor = self.model.generate( # type: ignore
             inputs=input_ids,
             attention_mask=inputs["attention_mask"],
             max_new_tokens=100,
-            pad_token_id=self.model.config.eos_token_id,
+            pad_token_id=self.model.config.eos_token_id, # type: ignore
             do_sample=True,
             top_p=0.9,
             temperature=0.8
