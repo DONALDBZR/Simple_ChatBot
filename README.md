@@ -1,9 +1,9 @@
 # Simple ChatBot 🤖
-
+---
 A lightweight chatbot built with **Python**, designed for simple conversational tasks and extendable via custom classes.
 ---
 ## 📂 Project Structure
-
+---
 Simple_ChatBot/
 ├── Classes/
 ├── index.py
