@@ -9,7 +9,7 @@ class Dictionary_Service:
     It is the service that will act as dictionary.
 
     Attributes:
-        dictionary: (Dictionary): The dictionary that will be used to find the definition of the given word.
+        __dictionary: (Dictionary): The dictionary that will be used to find the definition of the given word.
 
     Methods:
         defineWord(word: str) -> str: Retrieving the definition of the given word.
