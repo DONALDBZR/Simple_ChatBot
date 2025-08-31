@@ -7,9 +7,9 @@ class Response_Filter_Neural_Network(Module):
     It is a neural network for filtering the responses.
 
     Attributes:
-        fully_connected_layer_1 (Linear): The first fully connected layer.
-        fully_connected_layer_2 (Linear): The second fully connected layer.
-        fully_connected_layer_3 (Linear): The third fully connected layer.
+        __fully_connected_layer_1 (Linear): The first fully connected layer.
+        __fully_connected_layer_2 (Linear): The second fully connected layer.
+        __fully_connected_layer_3 (Linear): The third fully connected layer.
 
     Methods:
         forward(self, input_tensor: Tensor) -> Tensor: Forwarding the input tensor propagation through the neural network.
