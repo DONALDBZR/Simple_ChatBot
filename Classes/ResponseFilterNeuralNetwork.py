@@ -12,7 +12,7 @@ class Response_Filter_Neural_Network(Module):
         __fully_connected_layer_3 (Linear): The third fully connected layer.
 
     Methods:
-        forward(self, input_tensor: Tensor) -> Tensor: Forwarding the input tensor propagation through the neural network.
+        forward(input_tensor: Tensor) -> Tensor: Forwarding the input tensor propagation through the neural network.
     """
     __fully_connected_layer_1: Linear
     __fully_connected_layer_2: Linear
