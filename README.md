@@ -1,6 +1,9 @@
 # Simple ChatBot 🤖
 ## Description
 A lightweight chatbot built with **Python**, designed for simple conversational tasks and extendable via custom classes.
+### 🧩 Architecture
+
+![Class Diagram](Documents/ChatBot.drawio.Class_Diagram.png)
 ### 📂 Project Structure
 Simple_ChatBot/
 
