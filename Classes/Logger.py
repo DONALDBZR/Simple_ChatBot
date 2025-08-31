@@ -12,10 +12,10 @@ class ChatBot_Logger:
         __configurator (Logger_Configurator): The configurator for the logger.
 
     Methods:
-        debug(self, message: str) -> None: Logging the given message as a debug message.
-        info(self, message: str) -> None: Logging the given message as information.
-        warning(self, message: str) -> None: Logging the given message as a warning.
-        error(self, message: str) -> None: Logging the given message as an error.
+        debug(message: str) -> None: Logging the given message as a debug message.
+        info(message: str) -> None: Logging the given message as information.
+        warning(message: str) -> None: Logging the given message as a warning.
+        error(message: str) -> None: Logging the given message as an error.
     """
     __logger: Logger
     __configurator: Logger_Configurator
