@@ -23,7 +23,7 @@ class Trainer:
         __dictionary (Dictionary_Service): The dictionary service used to store and retrieve definitions of words.
         __is_smart_active (bool): A boolean value that indicates whether the AI is smart or not.
         __passive_replies (List[str]): A list of passive replies that the AI can use when it is not smart.
-        __tokenizer (Union[PreTrainedTokenizer, PreTrainedTokenizerFast]): The tokenizer used to tokenize input text.
+        __tokenizer (AutoTokenizer): The tokenizer used to tokenize input text.
         __model (AutoModelForCausalLM): The model used to generate responses.
 
     Methods:
