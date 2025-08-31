@@ -17,8 +17,8 @@ class Filter_Model:
         __loss_function (CrossEntropyLoss): The loss function used for training the model.
 
     Methods:
-        train_filter(self, embeddings: Any, labels: Any, epochs: int = 10) -> None: Training the filter model for a given number of epochs.
-        score(self, embeddings: Any) -> ndarray: Scoring the given embeddings with the filter model.
+        trainFilter(embeddings: NDArray[float64], labels: List[int], epochs: int) -> None: Training the filter model for a given number of epochs.
+        score(self, embeddings: NDArray[float64]) -> NDArray[np_float_32]: Scoring the given embeddings with the filter model.
     """
     __model: Response_Filter_Neural_Network
     __optimizer: Adam
