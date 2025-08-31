@@ -1,0 +1,6 @@
+numpy
+scikit-learn
+nltk
+Py-Dictionary
+torch
+transformers
