@@ -17,14 +17,14 @@ class Trainer:
     It manages the training and interaction with the AI model.
 
     Attributes:
-        memory (Memory_Manager): The memory manager used to store and retrieve conversation data.
-        embedder (Text_Embedder): The text embedder used to convert text into embeddings.
-        filter_model (Filter_Model): The filter model used to filter embeddings.
-        dictionary (Dictionary_Service): The dictionary service used to store and retrieve definitions of words.
-        is_smart_active (bool): A boolean value that indicates whether the AI is smart or not.
-        passive_replies (List[str]): A list of passive replies that the AI can use when it is not smart.
-        tokenizer (Union[PreTrainedTokenizer, PreTrainedTokenizerFast]): The tokenizer used to tokenize input text.
-        model (AutoModelForCausalLM): The model used to generate responses.
+        __memory (Memory_Manager): The memory manager used to store and retrieve conversation data.
+        __embedder (Text_Embedder): The text embedder used to convert text into embeddings.
+        __filter_model (Filter_Model): The filter model used to filter embeddings.
+        __dictionary (Dictionary_Service): The dictionary service used to store and retrieve definitions of words.
+        __is_smart_active (bool): A boolean value that indicates whether the AI is smart or not.
+        __passive_replies (List[str]): A list of passive replies that the AI can use when it is not smart.
+        __tokenizer (Union[PreTrainedTokenizer, PreTrainedTokenizerFast]): The tokenizer used to tokenize input text.
+        __model (AutoModelForCausalLM): The model used to generate responses.
 
     Methods:
         embedText(texts: List[str]) -> NDArray[float64]: Embedding the given texts unto numerical vectors.
