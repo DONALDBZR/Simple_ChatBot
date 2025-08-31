@@ -1,4 +1,4 @@
 /venv/
 /Classes/__pycache__/
 /Logs/
-/Documents/
+/Documents/*.drawio
