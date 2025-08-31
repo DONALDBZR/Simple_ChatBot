@@ -17,7 +17,7 @@ class Logger_Configurator:
         __handlers (List[Handler]): A list of handlers to be added to the logger.
 
     Methods:
-        configure(self, logger_name: str) -> Logger: Configuring a logger with the given name and applies the specified settings.
+        configure(logger_name: str) -> Logger: Configuring a logger with the given name and applies the specified settings.
     """
     __directory: str
     __filename: str
