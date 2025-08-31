@@ -12,9 +12,9 @@ class Filter_Model:
     It uses a neural network to filter input data based on their embeddings.
 
     Attributes:
-        model (Response_Filter_Neural_Network): The neural network used for filtering.
-        optimizer (Adam): The optimizer used for training the model.
-        loss_function (CrossEntropyLoss): The loss function used for training the model.
+        __model (Response_Filter_Neural_Network): The neural network used for filtering.
+        __optimizer (Adam): The optimizer used for training the model.
+        __loss_function (CrossEntropyLoss): The loss function used for training the model.
 
     Methods:
         train_filter(self, embeddings: Any, labels: Any, epochs: int = 10) -> None: Training the filter model for a given number of epochs.
