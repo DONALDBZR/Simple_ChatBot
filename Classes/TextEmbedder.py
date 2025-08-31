@@ -14,7 +14,7 @@ class Text_Embedder:
         __vectorizer (TfidfVectorizer): The term frequency-inverse document frequency vectorizer to be used for embedding.
 
     Methods:
-        embed(texts: ndarray, dimensionality: int = 100) -> ndarray: Embedding the given texts using the vectorizer and `TruncatedSVD` to the given dimensionality.
+        embed(texts: List[str], dimensionality: int) -> NDArray[float64]: Embedding the given texts using the vectorizer and `TruncatedSVD` to the given dimensionality.
     """
     __vectorizer: TfidfVectorizer
 
