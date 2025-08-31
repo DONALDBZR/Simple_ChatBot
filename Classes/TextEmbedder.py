@@ -11,7 +11,7 @@ class Text_Embedder:
     It embeds text data unto numerical vectors by using a Term Frequency-Inverse Document Frequency and Singular Value Decomposition.
 
     Attributes:
-        vectorizer (TfidfVectorizer): The term frequency-inverse document frequency vectorizer to be used for embedding.
+        __vectorizer (TfidfVectorizer): The term frequency-inverse document frequency vectorizer to be used for embedding.
 
     Methods:
         embed(texts: ndarray, dimensionality: int = 100) -> ndarray: Embedding the given texts using the vectorizer and `TruncatedSVD` to the given dimensionality.
